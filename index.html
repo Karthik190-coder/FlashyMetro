@@ -10,30 +10,90 @@
     </style>
 </head>
 <body>
+    <div id="controls" style="position:absolute; z-index:1000; top:10px; left:50px; background:white; padding:10px; border-radius:6px;">
+        <input id="startInput" placeholder="Start stop" />
+        <input id="endInput" placeholder="End stop" />
+        <button onclick="findRoute()">Find Route</button>
+        <div id="resultBox" style="margin-top:8px; font-family:sans-serif;"></div>  <!-- new: shows the returned total_time and route -->
+        <hr/>  <!-- new: visual separator between routing controls and disruption controls -->
+        <input id="disruptStopA" placeholder="Stop A" />  <!-- new -->
+        <input id="disruptStopB" placeholder="Stop B" />  <!-- new -->
+        <button onclick="disruptConnection()">Close Connection</button>  <!-- new -->
+        <button onclick="reopenConnection()">Reopen Connection</button>  <!-- new -->
+        <div id="disruptStatus" style="margin-top:8px; font-family:sans-serif;"></div>  <!-- new: shows success/error messages -->
+    </div>
     <div id="map"></div> <!--The default size for a div tag is applied to CSS, since the map is loaded on to js, it wont be visible unless its height is mentioned externally-->
 
     <script>
         const map = L.map('map').setView([10.0261, 76.3083], 12); //Initialized the map with zoom 12 at specified coords, and javascript DOM is used to access the map id which is under a div tag
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); //uses openstreetmap to actually visualize the map(leaflet fetches it) and then addTo puts it onto the map object id
-        fetch("http://127.0.0.1:5000/route?start=Aluva&end=Ernakulam South") //sends a GET request to retrieve the route from start to end
+    
+        let currentMarkers = [];   // track pins so we can clear them between searches
+        let currentLine = null;    // track the polyline so we can clear it too
+
+        function findRoute() {
+            const start = document.getElementById("startInput").value.trim();
+            const end = document.getElementById("endInput").value.trim();
+
+            // clear previous search's pins and line before drawing new ones
+            currentMarkers.forEach(m => map.removeLayer(m));
+            currentMarkers = [];
+            if (currentLine) map.removeLayer(currentLine);
+
+    fetch(`http://127.0.0.1:5000/route?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`) //sends a GET request to retrieve the route from start to end
     .then(response => response.json()) //jsonifies the response
-    .then(data => { 
+    .then(data => {
+    if (data.error) {
+        alert(data.error);
+        return;
+    }
         console.log(data); //logs the route
+        // writes the route and total time into the resultBox div so it's actually visible
+    document.getElementById("resultBox").innerText =
+        `Route: ${data.route.join(" → ")} | Total time: ${data.total_time} min`;
+
         fetch("http://127.0.0.1:5000/stops") //fetches the stops
     .then(response => response.json()) //jsonifies the stops
     .then(stops => {
         data.route.forEach(stopName => { //FOR EACH stop place a marker and a pop up to display stopname when clicked
             const coords = stops[stopName];
-            L.marker([coords[0], coords[1]])
+            const marker = L.marker([coords[0], coords[1]])   // keep a reference to this marker
                 .addTo(map)
                 .bindPopup(stopName);
+            currentMarkers.push(marker);   // store it so next search can clear it
     });
         
             const routeCoords=data.route.map(stopName => stops[stopName]); //for each stop in the list, make the coords of each stop as a list in a new list and store it in routeCoords
-            L.polyline(routeCoords,{color:'blue'}).addTo(map); //actually marks the route from new list that we made and adds it to the map so that its visible with a blue line connecting the pins
+            currentLine = L.polyline(routeCoords,{color:'blue'}).addTo(map); //actually marks the route from new list that we made and adds it to the map so that its visible with a blue line connecting the pins  // edited: assign to currentLine instead of a throwaway line, so it can be cleared later
+            map.fitBounds(currentLine.getBounds());   // auto-zoom the map to fit the whole route
         });
-    });
+    });   // closes .then(data => ...)
+        }   // closes function findRoute()
+
+        function disruptConnection() {  // new: fixed - moved outside/after findRoute() so it's a proper top-level function the button's onclick can find
+            const a = document.getElementById("disruptStopA").value.trim();  // new
+            const b = document.getElementById("disruptStopB").value.trim();  // new
+
+            fetch(`http://127.0.0.1:5000/disrupt?stop_a=${encodeURIComponent(a)}&stop_b=${encodeURIComponent(b)}`)  // new
+                .then(response => response.json())  // new
+                .then(data => {  // new
+                    const msg = data.error ? data.error : data.message;  // new
+                    document.getElementById("disruptStatus").innerText = msg;  // new
+                });  // new
+        }   // new: closes function disruptConnection()
+
+        function reopenConnection() {  // new: fixed - same placement fix as disruptConnection()
+            const a = document.getElementById("disruptStopA").value.trim();  // new
+            const b = document.getElementById("disruptStopB").value.trim();  // new
+
+            fetch(`http://127.0.0.1:5000/reopen?stop_a=${encodeURIComponent(a)}&stop_b=${encodeURIComponent(b)}`)  // new
+                .then(response => response.json())  // new
+                .then(data => {  // new
+                    const msg = data.error ? data.error : data.message;  // new
+                    document.getElementById("disruptStatus").innerText = msg;  // new
+                });  // new
+        }   // new: closes function reopenConnection()
     </script>
 </body>
 </html>

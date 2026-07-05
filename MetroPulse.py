@@ -53,32 +53,64 @@ def dijkstra_opti(graph,start,end):
         if current in visited: #skips the redundant data as in outdated slower routes
             continue
         visited.add(current) #keeps adding the locations that we have visited
-    for neighbour, time in graph[current].items():
-            if neighbour in visited:
-                continue
+        for neighbour, time in graph[current].items():
+                if neighbour in visited:
+                    continue
             
-            new_distance = current_distance + time
+                new_distance = current_distance + time
             
-            if new_distance < distance[neighbour]:
-                distance[neighbour] = new_distance
-                previous[neighbour] = current
-                heapq.heappush(priority_queue, (new_distance, neighbour))
+                if new_distance < distance[neighbour]:
+                    distance[neighbour] = new_distance
+                    previous[neighbour] = current
+                    heapq.heappush(priority_queue, (new_distance, neighbour))
+    path = []
+    current = end
+    while current is not None:
+        path.append(current)
+        current = previous[current]
+    path.reverse()
 
+    return path, distance[end]
 
+def close_connection(graph, stop_a, stop_b):
+    # stores the removed weight so it can be restored later, returns None if there was nothing to remove
+    removed = None
+    if stop_a in graph and stop_b in graph[stop_a]:
+        removed = graph[stop_a].pop(stop_b)
+    if stop_b in graph and stop_a in graph[stop_b]:
+        graph[stop_b].pop(stop_a)
+    return removed
+
+def reopen_connection(graph, stop_a, stop_b, weight):
+    # restores a previously closed connection in both directions
+    graph[stop_a][stop_b] = weight
+    graph[stop_b][stop_a] = weight
+    
 graph1 = {
-    "Aluva":{"Edapally":15, "Kalamassery" :10},
-    "Kalamassery":{"Edapally":7,"Aluva":10},
-    "Edapally":{"Aluva":15,"Kalamassery":7,"Kaloor":12},
-    "Kaloor":{"Edapally":12,"Ernakulam South":8},
-    "Ernakulam South":{"Kaloor":8}
+    "Aluva": {"Edapally": 15, "Kalamassery": 10},
+    "Kalamassery": {"Edapally": 7, "Aluva": 10},
+    "Edapally": {"Aluva": 15, "Kalamassery": 7, "Kaloor": 12, "Palarivattom": 6},
+    "Palarivattom": {"Edapally": 6, "Kaloor": 5, "Vyttila": 9},
+    "Kaloor": {"Edapally": 12, "Ernakulam South": 8, "Palarivattom": 5, "MG Road": 6},
+    "MG Road": {"Kaloor": 6, "Ernakulam South": 4, "Thevara": 7},
+    "Ernakulam South": {"Kaloor": 8, "MG Road": 4, "Vyttila": 5},
+    "Vyttila": {"Palarivattom": 9, "Ernakulam South": 5, "Thykoodam": 6},
+    "Thevara": {"MG Road": 7, "Thykoodam": 5},
+    "Thykoodam": {"Vyttila": 6, "Thevara": 5}
 }
 stop_coords = {
     "Aluva": (10.1004, 76.3570),
     "Kalamassery": (10.0544, 76.3212),
     "Edapally": (10.0261, 76.3083),
+    "Palarivattom": (10.0004, 76.3033),
     "Kaloor": (9.9931, 76.2998),
-    "Ernakulam South": (9.9816, 76.2999)
+    "MG Road": (9.9789, 76.2833),
+    "Ernakulam South": (9.9816, 76.2999),
+    "Vyttila": (9.9682, 76.3186),
+    "Thevara": (9.9560, 76.2926),
+    "Thykoodam": (9.9520, 76.3105)
 }
+
 #path, total_time = dijkstra(graph1, "Aluva", "Ernakulam South")
 #print("Best route:", " → ".join(path))
 #print("Total time:", total_time, "minutes")
