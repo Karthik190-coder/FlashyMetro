@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MetroPulse</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/> <!--Loads the css for the map-->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><!--Loads the js for the map-->
+     <!--We use external css and js, the external css pulls up leaflet on unpkg and js actually loads the logic of the map -->
+    <style>
+        #map { height: 100vh; width: 100%; } /*vh=viewport height, 1vh=1% of browsers height, thus every device displays it properly */
+    </style>
+</head>
+<body>
+    <div id="map"></div> <!--The default size for a div tag is applied to CSS, since the map is loaded on to js, it wont be visible unless its height is mentioned externally-->
+
+    <script>
+        const map = L.map('map').setView([10.0261, 76.3083], 12); //Initialized the map with zoom 12 at specified coords, and javascript DOM is used to access the map id which is under a div tag
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); //uses openstreetmap to actually visualize the map(leaflet fetches it) and then addTo puts it onto the map object id
+        fetch("http://127.0.0.1:5000/route?start=Aluva&end=Ernakulam South") //sends a GET request to retrieve the route from start to end
+    .then(response => response.json()) //jsonifies the response
+    .then(data => { 
+        console.log(data); //logs the route
+        fetch("http://127.0.0.1:5000/stops") //fetches the stops
+    .then(response => response.json()) //jsonifies the stops
+    .then(stops => {
+        data.route.forEach(stopName => { //FOR EACH stop place a marker and a pop up to display stopname when clicked
+            const coords = stops[stopName];
+            L.marker([coords[0], coords[1]])
+                .addTo(map)
+                .bindPopup(stopName);
+    });
+        
+            const routeCoords=data.route.map(stopName => stops[stopName]); //for each stop in the list, make the coords of each stop as a list in a new list and store it in routeCoords
+            L.polyline(routeCoords,{color:'blue'}).addTo(map); //actually marks the route from new list that we made and adds it to the map so that its visible with a blue line connecting the pins
+        });
+    });
+    </script>
+</body>
+</html>
