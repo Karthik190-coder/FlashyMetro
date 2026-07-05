@@ -85,30 +85,63 @@ def reopen_connection(graph, stop_a, stop_b, weight):
     # restores a previously closed connection in both directions
     graph[stop_a][stop_b] = weight
     graph[stop_b][stop_a] = weight
-    
+
+# Real Kochi Metro Blue Line, Aluva -> Tripunithura (25 stations, official KMRL order)
+# Travel times are an approximation (based on published ~46 min average end-to-end pace),
+# not exact KMRL timetable data
 graph1 = {
-    "Aluva": {"Edapally": 15, "Kalamassery": 10},
-    "Kalamassery": {"Edapally": 7, "Aluva": 10},
-    "Edapally": {"Aluva": 15, "Kalamassery": 7, "Kaloor": 12, "Palarivattom": 6},
-    "Palarivattom": {"Edapally": 6, "Kaloor": 5, "Vyttila": 9},
-    "Kaloor": {"Edapally": 12, "Ernakulam South": 8, "Palarivattom": 5, "MG Road": 6},
-    "MG Road": {"Kaloor": 6, "Ernakulam South": 4, "Thevara": 7},
-    "Ernakulam South": {"Kaloor": 8, "MG Road": 4, "Vyttila": 5},
-    "Vyttila": {"Palarivattom": 9, "Ernakulam South": 5, "Thykoodam": 6},
-    "Thevara": {"MG Road": 7, "Thykoodam": 5},
-    "Thykoodam": {"Vyttila": 6, "Thevara": 5}
+    "Aluva": {"Pulinchodu": 2},
+    "Pulinchodu": {"Aluva": 2, "Companypady": 2},
+    "Companypady": {"Pulinchodu": 2, "Ambattukavu": 2},
+    "Ambattukavu": {"Companypady": 2, "Muttom": 2},
+    "Muttom": {"Ambattukavu": 2, "Kalamassery": 2},
+    "Kalamassery": {"Muttom": 2, "Cochin University": 2},
+    "Cochin University": {"Kalamassery": 2, "Pathadipalam": 2},
+    "Pathadipalam": {"Cochin University": 2, "Edapally": 2},
+    "Edapally": {"Pathadipalam": 2, "Changampuzha Park": 2},
+    "Changampuzha Park": {"Edapally": 2, "Palarivattom": 2},
+    "Palarivattom": {"Changampuzha Park": 2, "JLN Stadium": 2},
+    "JLN Stadium": {"Palarivattom": 2, "Kaloor": 2},
+    "Kaloor": {"JLN Stadium": 2, "Town Hall": 2},
+    "Town Hall": {"Kaloor": 2, "MG Road": 2},
+    "MG Road": {"Town Hall": 2, "Maharaja's College": 2},
+    "Maharaja's College": {"MG Road": 2, "Ernakulam South": 2},
+    "Ernakulam South": {"Maharaja's College": 2, "Kadavanthra": 2},
+    "Kadavanthra": {"Ernakulam South": 2, "Elamkulam": 2},
+    "Elamkulam": {"Kadavanthra": 2, "Vyttila": 2},
+    "Vyttila": {"Elamkulam": 2, "Thaikoodam": 2},
+    "Thaikoodam": {"Vyttila": 2, "Petta": 2},
+    "Petta": {"Thaikoodam": 2, "Vadakkekotta": 2},
+    "Vadakkekotta": {"Petta": 2, "SN Junction": 2},
+    "SN Junction": {"Vadakkekotta": 2, "Tripunithura": 2},
+    "Tripunithura": {"SN Junction": 2}
 }
 stop_coords = {
     "Aluva": (10.1004, 76.3570),
-    "Kalamassery": (10.0544, 76.3212),
-    "Edapally": (10.0261, 76.3083),
-    "Palarivattom": (10.0004, 76.3033),
-    "Kaloor": (9.9931, 76.2998),
-    "MG Road": (9.9789, 76.2833),
-    "Ernakulam South": (9.9816, 76.2999),
-    "Vyttila": (9.9682, 76.3186),
-    "Thevara": (9.9560, 76.2926),
-    "Thykoodam": (9.9520, 76.3105)
+    "Pulinchodu": (10.0938, 76.3564),
+    "Companypady": (10.0873, 76.3557),
+    "Ambattukavu": (10.0808, 76.3551),
+    "Muttom": (10.0742, 76.3545),
+    "Kalamassery": (10.0677, 76.3538),
+    "Cochin University": (10.0611, 76.3532),
+    "Pathadipalam": (10.0546, 76.3526),
+    "Edapally": (10.0480, 76.3519),
+    "Changampuzha Park": (10.0415, 76.3513),
+    "Palarivattom": (10.0350, 76.3507),
+    "JLN Stadium": (10.0284, 76.3500),
+    "Kaloor": (10.0219, 76.3494),
+    "Town Hall": (10.0153, 76.3488),
+    "MG Road": (10.0088, 76.3481),
+    "Maharaja's College": (10.0022, 76.3475),
+    "Ernakulam South": (9.9957, 76.3469),
+    "Kadavanthra": (9.9892, 76.3462),
+    "Elamkulam": (9.9826, 76.3456),
+    "Vyttila": (9.9761, 76.3450),
+    "Thaikoodam": (9.9695, 76.3444),
+    "Petta": (9.9630, 76.3437),
+    "Vadakkekotta": (9.9565, 76.3431),
+    "SN Junction": (9.9499, 76.3425),
+    "Tripunithura": (9.9500, 76.3500)
 }
 
 #path, total_time = dijkstra(graph1, "Aluva", "Ernakulam South")
