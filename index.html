@@ -11,15 +11,15 @@
 </head>
 <body>
     <div id="controls" style="position:absolute; z-index:1000; top:10px; left:50px; background:white; padding:10px; border-radius:6px;">
-        <input id="startInput" placeholder="Start stop" />
-        <input id="endInput" placeholder="End stop" />
+        <select id="startInput"></select>  <!-- changed: was a text input, now a dropdown -->
+        <select id="endInput"></select>    <!-- changed: was a text input, now a dropdown -->
         <button onclick="findRoute()">Find Route</button>
         <div id="resultBox" style="margin-top:8px; font-family:sans-serif;"></div>  <!-- new: shows the returned total_time and route -->
         <hr/>  <!-- new: visual separator between routing controls and disruption controls -->
-        <input id="disruptStopA" placeholder="Stop A" />  <!-- new -->
-        <input id="disruptStopB" placeholder="Stop B" />  <!-- new -->
-        <button onclick="disruptConnection()">Close Connection</button>  <!-- new -->
-        <button onclick="reopenConnection()">Reopen Connection</button>  <!-- new -->
+        <select id="disruptStopA"></select>  <!-- changed: was a text input, now a dropdown -->
+        <select id="disruptStopB"></select>  <!-- changed: was a text input, now a dropdown -->
+        <button onclick="disruptConnection()">Close Connection</button>
+        <button onclick="reopenConnection()">Reopen Connection</button>
         <div id="disruptStatus" style="margin-top:8px; font-family:sans-serif;"></div>  <!-- new: shows success/error messages -->
     </div>
     <div id="map"></div> <!--The default size for a div tag is applied to CSS, since the map is loaded on to js, it wont be visible unless its height is mentioned externally-->
@@ -28,7 +28,25 @@
         const map = L.map('map').setView([10.0261, 76.3083], 12); //Initialized the map with zoom 12 at specified coords, and javascript DOM is used to access the map id which is under a div tag
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); //uses openstreetmap to actually visualize the map(leaflet fetches it) and then addTo puts it onto the map object id
-    
+        // new: fills both dropdowns with every real stop name, fetched once on page load
+        fetch("http://127.0.0.1:5000/stops")
+            .then(response => response.json())
+            .then(stops => {
+                const startSelect = document.getElementById("startInput");
+                const endSelect = document.getElementById("endInput");
+                const disruptASelect = document.getElementById("disruptStopA");   // new
+                const disruptBSelect = document.getElementById("disruptStopB");   // new
+                Object.keys(stops).forEach(stopName => {
+                    startSelect.innerHTML += `<option value="${stopName}">${stopName}</option>`;
+                    endSelect.innerHTML += `<option value="${stopName}">${stopName}</option>`;
+                    disruptASelect.innerHTML += `<option value="${stopName}">${stopName}</option>`;   // new
+                    disruptBSelect.innerHTML += `<option value="${stopName}">${stopName}</option>`;   // new
+                });
+            })
+            .catch(err => {
+                document.getElementById("stopsLoadStatus").innerText =
+                    "Failed to load stop list: " + err.message;
+            });  // new: surfaces the real error instead of failing silently
         let currentMarkers = [];   // track pins so we can clear them between searches
         let currentLine = null;    // track the polyline so we can clear it too
 
